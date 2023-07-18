@@ -1,7 +1,8 @@
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
 import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { GraphQLList, GraphQLObjectType, GraphQLSchema, graphql } from 'graphql';
-import { MemberTypes, Posts, Profiles, Users } from './types/types.js';
+import {  GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, graphql } from 'graphql';
+import { MemberTypeId, MemberTypes, PostType, Profiles, UserType } from './types/types.js';
+import { UUIDType } from './types/uuid.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma, httpErrors } = fastify;
@@ -11,33 +12,118 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     fields: {
       memberTypes: {
         type: new GraphQLList(MemberTypes),
-        //args: {}
         resolve: async (_: unknown, __: unknown) => {
-          //return prisma.memberType.findMany();
-          return await prisma.memberType.findMany();
+               return await prisma.memberType.findMany();
+        },
+      },
+      memberType: {
+        type: MemberTypes,
+        args: {
+          id: { type: new GraphQLNonNull(MemberTypeId) },
+        },
+        resolve: async (_: unknown, args: { id: string }, context) => {
+          console.log('контекст ----->', context);
+          const res = await prisma.memberType.findUnique({
+            where: {
+              id: args.id,
+            },
+          });
+          return res;
         },
       },
       posts: {
-        type: new GraphQLList(Posts),
+        type: new GraphQLList(PostType),
         resolve: async (_: unknown, __: unknown) => {
-          //return prisma.memberType.findMany();
           return await prisma.post.findMany();
         },
       },
-      users: {
-        type: new GraphQLList(Users),
-        //args: {}
-        resolve: async (_: unknown, __: unknown) => {
-          //return prisma.memberType.findMany();
-          return await prisma.user.findMany();
+      post: {
+        type: PostType,
+        args: {
+          id: { type: new GraphQLNonNull(UUIDType) },
+        },
+        resolve: async (
+          _: unknown,
+          args: { id: string },
+          ) => {
+          const res = await prisma.post.findUnique({
+            where: {
+              id: args.id,
+            },
+          });
+          return res;
         },
       },
+      users: {
+        type: new GraphQLList(UserType),
+        resolve: async (_: unknown, __: unknown) => {
+          return await prisma.user.findMany({
+            include: {
+              profile: {
+                include: {
+                  memberType: true,
+                },
+              },
+              posts: true,
+            },
+          });
+        },
+      },
+      user: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        type: UserType,
+        args: {
+          id: { type: new GraphQLNonNull(UUIDType) },
+        },
+        resolve: async (_: unknown, args: { id: string }, context) => {
+          const res = await prisma.user.findUnique({
+            where: {
+              id: args.id,
+            },
+            include: {
+              profile: {
+                include: {
+                  memberType: true,
+                },
+              },
+              //posts: true,
+              //userSubscribedTo:  true
+              /*{
+                
+                include: {
+                  author: true,
+                },
+              },*/
+              //subscribedToUser: true
+              /*{
+                include: {
+                  subsriber: true,
+                },
+              },*/
+            },
+          });
+          return res;
+        },
+      },
+      
       profiles: {
         type: new GraphQLList(Profiles),
-        //args: {}
         resolve: async (_: unknown, __: unknown) => {
-          //return prisma.memberType.findMany();
           return await prisma.profile.findMany();
+        },
+      },
+      profile: {
+        type: Profiles,
+        args: {
+          id: { type: new GraphQLNonNull(UUIDType) },
+        },
+        resolve: async (_: unknown, args: { id: string }, context) => {
+          const res = await prisma.profile.findUnique({
+            where: {
+              id: args.id,
+            },
+          });
+          return res;
         },
       },
     },
@@ -55,23 +141,22 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       ...createGqlResponseSchema,
       response: {
         200: gqlResponseSchema,
+        404: Type.Null(),
       },
     },
     async handler(req) {
-      const { query, variables} =req.body;
+      const { query, variables } = req.body;
       console.log('this is req.body.query  -----> ', query);
-      //console.log('this is req.body.variables  ----->', variables);
-      const res = await graphql(
-        {schema: schema,
-        source: query,}
-      )
-      console.log("это ответ сервера ---->", res)
+      console.log('this is req.body.variables  ----->', variables);
+      const res = await graphql({
+        schema: schema,
+        source: query,
+        variableValues: variables,
+      });
+      console.log('это ответ сервера ---->', res);
       return res;
     },
   });
-
-
-
 
   
 };
