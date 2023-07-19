@@ -1,4 +1,4 @@
-import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { PrismaClient } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
@@ -36,6 +36,33 @@ export const PostType = new GraphQLObjectType({
   }),
 });
 
+export const CreatePostInput = new GraphQLInputObjectType({
+  name: 'CreatePostInput',
+  description: 'posts input',
+  fields: () => ({
+    authorId: { type: new GraphQLNonNull(UUIDType) },
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+  })
+})
+export const CreateUserInput = new GraphQLInputObjectType({
+  name: 'CreateUserInput',
+  description: 'user input',
+  fields: () => ({
+    name: { type: GraphQLString },
+    balance: { type: GraphQLFloat },
+  }),
+});
+export const CreateProfileInput = new GraphQLInputObjectType({
+  name: 'CreateProfileInput',
+  description: 'profile input',
+  fields: () => ({
+    userId: { type: GraphQLString },
+    memberTypeId: { type: MemberTypeId },
+    isMale: { type: GraphQLBoolean },
+    yearOfBirth: { type: GraphQLInt },
+  }),
+});
 export const UserType = new GraphQLObjectType({
   name: 'users',
   description: 'this is users type',
@@ -124,3 +151,6 @@ export const Profiles = new GraphQLObjectType({
   }
   }),
 });
+
+
+ 
