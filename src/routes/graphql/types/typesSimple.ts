@@ -1,3 +1,5 @@
+import { PrismaClient } from '@prisma/client';
+
 export type PostInput = {
   title: string;
   content: string;
@@ -14,4 +16,8 @@ export type ProfileInput = {
   memberTypeId: 'basic' | 'business';
   isMale: boolean;
   yearOfBirth: number;
+}
+
+export type ContextValue = {
+  prisma: PrismaClient;
 }
