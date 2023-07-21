@@ -25,4 +25,5 @@ export const createGqlResponseSchema = {
   export const schema = new GraphQLSchema({
     query: RootQuery,
     mutation: RootMutation,
+    
   });
