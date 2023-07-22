@@ -33,7 +33,7 @@ export type Profile = {
   memberTypeId: string;
   memberType: MemberType;
   userId: string;
-  //user: User;
+  user: User;
 };
 
 
