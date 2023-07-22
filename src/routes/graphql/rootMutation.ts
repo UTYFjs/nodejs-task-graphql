@@ -15,7 +15,7 @@ import {
   ChangeProfileInput,
 } from './types/types.js';
 import { UUIDType } from './types/uuid.js';
-import { ContextValue, PostInput, ProfileInput, UserInput } from './types/typesSimple.js';
+import { ContextValue, PostInput, ProfileInput, UserInput } from './types/typesJS.js';
 
 export const RootMutation = new GraphQLObjectType({
   name: 'RootMutationType',
