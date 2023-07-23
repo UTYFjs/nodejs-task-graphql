@@ -11,7 +11,8 @@ import {
   UserType,
 } from './types/types.js';
 import { UUIDType } from './types/uuid.js';
-import { ContextValue } from './types/typesJS.js';
+import { ContextValue, User } from './types/typesJS.js';
+import { parseResolveInfo } from 'graphql-parse-resolve-info';
 
 
 export const RootQuery = new GraphQLObjectType({
@@ -58,10 +59,8 @@ export const RootQuery = new GraphQLObjectType({
       resolve: async (
         _: unknown,
         args: { id: string },
-        { prisma }: ContextValue,
+        { prisma }: ContextValue
       ) => {
-        //not working
-        //return loader.post.load(args.id);
         const res = await prisma.post.findUnique({
           where: {
             id: args.id,
@@ -70,15 +69,54 @@ export const RootQuery = new GraphQLObjectType({
         return res;
       },
     },
-    //users: {type: new GraphQLList(UserType)},
     users: {
       type: new GraphQLList(UserType),
-      resolve: async (_: unknown, __: unknown, { prisma }: ContextValue) => {
-        return await prisma.user.findMany();
+      resolve: async (_: unknown, __: unknown, { prisma, loader}: ContextValue, info) => {
+        const parsedInfo = parseResolveInfo(info);
+        const isUserSubscribedTo =!!parsedInfo?.fieldsByTypeName.User['userSubscribedTo'];
+        const isSubscribedToUser =!!parsedInfo?.fieldsByTypeName.User['subscribedToUser'];
+        const users = await prisma.user.findMany({
+           include: {
+             userSubscribedTo: isUserSubscribedTo,
+             subscribedToUser: isSubscribedToUser,
+           },
+        });
+
+        if(isUserSubscribedTo){
+          const subs = {};
+          users.forEach((user)=> {
+            subs[user.id] = user.userSubscribedTo.map((sub)=> {
+              const subId = sub.subscriberId;
+              return users.find((user) => user.id === subId)
+            })
+          })
+          const arrFromSubs = Object.entries(subs);
+          arrFromSubs.forEach((sub) => {
+            const user = sub[1] as User[];
+            loader.userSubscribedTo.prime(sub[0] , user[0]);
+          })
+        }
+         
+
+        if (isSubscribedToUser) {
+          const authors = {};
+          users.forEach((user) => {
+            authors[user.id] = user.userSubscribedTo.map((sub) => {
+              const subId = sub.subscriberId;
+              return users.find((user) => user.id === subId);
+            });
+          });
+          const arrFromAuthors = Object.entries(authors);
+          arrFromAuthors.forEach((sub) => {
+            const user = sub[1] as User[];
+            loader.subscribedToUser.prime(sub[0], user[0]);
+          });
+        }
+        //users.forEach(user => loader.user.prime(user.id, user));
+         return users;
       },
     },
     user: {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       type: UserType as GraphQLObjectType,
       args: {
         id: { type: new GraphQLNonNull(UUIDType) },
@@ -88,6 +126,7 @@ export const RootQuery = new GraphQLObjectType({
         args: { id: string },
         { prisma }: ContextValue,
       ) => {
+        //const res = await loader.user.load(args.id);
         const res = await prisma.user.findUnique({ where: { id: args.id } });
         return res;
       },

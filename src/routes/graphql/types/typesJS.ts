@@ -44,7 +44,6 @@ export type Post = {
   title: string;
   content: string;
   authorId: string;
-  //author: User;
 }
 export type MemberType = {
   id: string;
@@ -61,6 +60,6 @@ export type ContextValue = {
    post: DataLoader<string, Post[], string>;
    memberType: DataLoader<string, Post, string>;
    //user: DataLoader<string, User, string>;
-   userSubscribedTo: DataLoader<string, User[], string>;
-   subscribedToUser: DataLoader<string, User[][], string>;
+   userSubscribedTo: DataLoader<string, User, string>;
+   subscribedToUser: DataLoader<string, User, string>;
  };

@@ -18,7 +18,7 @@ export const UserType = new GraphQLObjectType({
       resolve: async (parent: User, _, { loader }: ContextValue) => {
         //working
         const posts =  await loader.post.load(parent.id);
-        console.log("RESULTS POST FROM DATALOADER --------->", posts);
+        //console.log("RESULTS POST FROM DATALOADER --------->", posts);
       return [posts]; 
        /*return await prisma.post.findMany({
           where: {
@@ -41,10 +41,6 @@ export const UserType = new GraphQLObjectType({
     userSubscribedTo: {
       type: new GraphQLList(UserType),
       resolve: async (parent: User, _, { loader }: ContextValue) => {
-        console.log(
-          'THIS IS PARENT FROM USERSUBSCRIBEDTO------------------------->',
-          parent.subscribedToUser,
-        );
          const res = await loader.userSubscribedTo.load(parent.id);
          return [res];
         /*return await prisma.user.findMany({
@@ -57,8 +53,6 @@ export const UserType = new GraphQLObjectType({
       resolve: async (parent: User, _, { loader }: ContextValue) => {
         
         const res = await loader.subscribedToUser.load(parent.id);
-        //console.log('ТО ЧТО ВЫВОДИТ SubscribedTOUSER --------------->>', res);
-        
         return [res];
         /* const result = await prisma.user.findMany({
           where: {
@@ -66,7 +60,6 @@ export const UserType = new GraphQLObjectType({
           },
 
         });
-        console.log ('ТО ЧТО ВЫВОДИТ SubscribedTOUSER --------------->>', result)
         return result;*/
 
       },

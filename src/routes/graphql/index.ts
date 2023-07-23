@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         variableValues: variables,
         contextValue: { prisma, loader}
       });
-      console.log('это ответ сервера graphql---->', res);
+      //console.log('это ответ сервера graphql---->', res.errors);
       return res;
     },
   });
