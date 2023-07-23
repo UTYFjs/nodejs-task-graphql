@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, SubscribersOnAuthors } from '@prisma/client';
 import DataLoader from 'dataloader';
 
 export type PostInput = {
@@ -22,9 +22,11 @@ export type User = {
   id: string;
   name: string;
   balance: number;
-  posts: Array<Post>;
-  profile?: Profile; 
-}
+  posts?: Array<Post>;
+  profile?: Profile;
+  userSubscribedTo?: SubscribersOnAuthors[];
+  subscribedToUser?: SubscribersOnAuthors[];
+};
 
 export type Profile = {
   id: string;
@@ -56,9 +58,9 @@ export type ContextValue = {
 }
  type loaders = {
    profile: DataLoader<string, Profile, string>;
-   post: DataLoader<string, Post, string>;
+   post: DataLoader<string, Post[], string>;
    memberType: DataLoader<string, Post, string>;
-   user: DataLoader<string, User, string>;
-   userSubscribedTo: number;
-   subscribedToUser: number;
+   //user: DataLoader<string, User, string>;
+   userSubscribedTo: DataLoader<string, User[], string>;
+   subscribedToUser: DataLoader<string, User[][], string>;
  };

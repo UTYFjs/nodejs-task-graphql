@@ -1,7 +1,8 @@
-import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, 
+  GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, 
+  GraphQLObjectType, GraphQLString } from 'graphql';
 import { UUIDType } from './uuid.js';
-import { PrismaClient } from '@prisma/client';
-import { FastifyInstance } from 'fastify';
+
 import { ContextValue, MemberType, Post, Profile, User } from './typesJS.js';
 
 export const UserType = new GraphQLObjectType({
@@ -14,40 +15,59 @@ export const UserType = new GraphQLObjectType({
 
     posts: {
       type: new GraphQLList(PostType),
-      resolve: async (parent: User, _, { prisma, loader }: ContextValue, info) => {
-        ///await loader.post.load(parent.id);
-        return await prisma.post.findMany({
+      resolve: async (parent: User, _, { loader }: ContextValue) => {
+        //working
+        const posts =  await loader.post.load(parent.id);
+        console.log("RESULTS POST FROM DATALOADER --------->", posts);
+      return [posts]; 
+       /*return await prisma.post.findMany({
           where: {
             authorId: parent.id,
           },
-        });
+        });*/
       },
     },
     profile: {      
       type: Profiles as GraphQLObjectType,
-      resolve: async (parent: User, _, { prisma, loader }: ContextValue) => {
-        return await prisma.profile.findUnique({
+      resolve: async (parent: User, _, { loader }: ContextValue) => {
+                return await loader.profile.load(parent.id);
+        /*return await prisma.profile.findUnique({
           where: {
             userId: parent.id,
           },
-        });
+        });*/
       },
     },
     userSubscribedTo: {
       type: new GraphQLList(UserType),
-      resolve: async (parent: User, _, { prisma, loader }: ContextValue, info) => {
-        return await prisma.user.findMany({ where: {subscribedToUser: {some: {subscriberId : parent.id} }}, });
+      resolve: async (parent: User, _, { loader }: ContextValue) => {
+        console.log(
+          'THIS IS PARENT FROM USERSUBSCRIBEDTO------------------------->',
+          parent.subscribedToUser,
+        );
+         const res = await loader.userSubscribedTo.load(parent.id);
+         return [res];
+        /*return await prisma.user.findMany({
+          where: { subscribedToUser: { some: { subscriberId: parent.id } } },
+        });*/
       },
     },
     subscribedToUser: {
       type: new GraphQLList(UserType),
-      resolve: async (parent: User, _, { prisma, loader }: ContextValue, info) => {
-        return await prisma.user.findMany({
+      resolve: async (parent: User, _, { loader }: ContextValue) => {
+        
+        const res = await loader.subscribedToUser.load(parent.id);
+        //console.log('ТО ЧТО ВЫВОДИТ SubscribedTOUSER --------------->>', res);
+        
+        return [res];
+        /* const result = await prisma.user.findMany({
           where: {
             userSubscribedTo: { some: { authorId: parent.id}},
           },
 
         });
+        console.log ('ТО ЧТО ВЫВОДИТ SubscribedTOUSER --------------->>', result)
+        return result;*/
 
       },
     },
@@ -61,16 +81,16 @@ export const Profiles = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(UUIDType) },
     isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
     yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
-    //memberTypeId: { type: new GraphQLNonNull(MemberTypeId) },
     memberType: {
-      type: MemberTypes,
-      resolve: async (parent: Profile, _, { prisma, loader }: ContextValue) => {
-        return await  prisma.memberType.findUnique({ where: { id: parent.memberTypeId } });
+      type: MemberTypes as GraphQLObjectType,
+      resolve: async (parent: Profile, _, { loader }: ContextValue) => {
+        return await loader.memberType.load(parent.memberTypeId);
+        //return await  prisma.memberType.findUnique({ where: { id: parent.memberTypeId } });
       },
     },
-    //userId: { type: new GraphQLNonNull(UUIDType) },
+    userId: { type: new GraphQLNonNull(UUIDType) },
     user: {type: new GraphQLNonNull(UserType),
-    resolve: async (parent: Profile, _ , {prisma, loader}:ContextValue, ) => {
+    resolve: async (parent: Profile, _ , {prisma}:ContextValue, ) => {
       return await prisma.user.findUnique({where: { id: parent.userId}})
     }}
   }),
@@ -84,12 +104,13 @@ export const PostType = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(UUIDType) },
     title: { type: new GraphQLNonNull(GraphQLString) },
     content: { type: new GraphQLNonNull(GraphQLString) },
-    /*author: {
+    authorId: { type: new GraphQLNonNull(UUIDType) },
+    author: {
       type: UserType as GraphQLObjectType,
-      resolve: async (parent: Post, _, { prisma, loader }: ContextValue) => {
+      resolve: async (parent: Post, _, { prisma }: ContextValue) => {
         return await prisma.user.findUnique({ where: { id: parent.authorId } });
       },
-    },*/
+    },
   }),
 });
 
@@ -100,12 +121,12 @@ export const MemberTypes = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(MemberTypeId) },
     discount: { type: new GraphQLNonNull(GraphQLFloat) },
     postsLimitPerMonth: { type: new GraphQLNonNull(GraphQLInt) },
-    /*profiles: {
+    profiles: {
       type: new GraphQLList(Profiles),
-      resolve: async (parent: MemberType, _, { prisma, loader }: ContextValue) => {
+      resolve: async (parent: MemberType, _, { prisma }: ContextValue) => {
         return await prisma.profile.findMany({where:{memberTypeId: parent.id}})
       },
-    },*/
+    },
   }),
 });
 
