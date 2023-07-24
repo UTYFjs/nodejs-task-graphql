@@ -90,7 +90,8 @@ export const RootQuery = new GraphQLObjectType({
           const arrFromSubs = Object.entries(subs);
           arrFromSubs.forEach((sub) => {
             const user = sub[1] as User[];
-            loader.userSubscribedTo.prime(sub[0] , user[0]);
+            //console.log('FromQuery user[0 ------------>', user[0])
+            loader.userSubscribedTo.prime(sub[0] , user[0] );
           })
         }
          

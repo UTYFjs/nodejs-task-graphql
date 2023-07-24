@@ -17,10 +17,10 @@ export const UserType = new GraphQLObjectType({
       type: new GraphQLList(PostType),
       resolve: async (parent: User, _, { loader }: ContextValue) => {
         const posts =  await loader.post.load(parent.id);
-      return [posts]; 
+      return posts; 
       },
     },
-    profile: {      
+    profile: {   
       type: Profiles as GraphQLObjectType,
       resolve: async (parent: User, _, { loader }: ContextValue) => {
                 return await loader.profile.load(parent.id);

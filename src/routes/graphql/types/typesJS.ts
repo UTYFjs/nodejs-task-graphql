@@ -57,7 +57,7 @@ export type ContextValue = {
 }
  type loaders = {
    profile: DataLoader<string, Profile, string>;
-   post: DataLoader<string, Post[], string>;
+   post: DataLoader<string, Post[][], string>;
    memberType: DataLoader<string, Post, string>;
    userSubscribedTo: DataLoader<string, User, string>;
    subscribedToUser: DataLoader<string, User, string>;

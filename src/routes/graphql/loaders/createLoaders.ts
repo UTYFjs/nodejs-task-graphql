@@ -23,15 +23,35 @@ export const createProfileLoader = (prisma: PrismaClient) => {
 export const createPostLoader = (prisma: PrismaClient) => {
   return new DataLoader(async (keys: readonly string[]) => {
     const ids = [...keys];
+    //get all posts of all authors
     const results = (await prisma.post.findMany({
       where: {
         authorId: { in: ids },
       },
-    })) as Post[];
+    }));
+
+    //console.log("POST LOADER RESults --------------->", results);
+    //sorting posts by authors
+    const posts1:Record<string, Post[]> ={};
+    results.forEach((post) => {
+      let authorPostsCollection = posts1[post.authorId];
+      if(!authorPostsCollection){
+        authorPostsCollection = []
+      }
+      authorPostsCollection.push(post)
+      posts1[post.authorId] = authorPostsCollection;
+    })
+    // sorting by order key
+    const posts2 = ids.map((key) => {
+      return posts1[key]
+    })
+
     const posts = ids.map((key) => {
       return results.find((post) => post.authorId === key);
     });
-    return posts;
+   // return posts;
+   //console.log("POSTS by AUTHORS ------------->", posts2, "oldPosts", posts);
+   return posts2;
   });
 };
 
@@ -53,6 +73,7 @@ export const createMemberTypeLoader = (prisma: PrismaClient) => {
 export const createUserSubscribedTo = (prisma: PrismaClient) => {
   return new DataLoader(async (keys: readonly string[]) => {
     const ids = [...keys];
+    //all subscribers
     const results = await prisma.subscribersOnAuthors.findMany({
       where: {
         subscriberId: { in: ids },
@@ -62,9 +83,14 @@ export const createUserSubscribedTo = (prisma: PrismaClient) => {
         author: true,
       },
     });
+
+
+
+
     const users = ids.map((key) => {
       return results.find((memberType) => memberType.subscriberId === key)?.author;
     });
+    console.log('UserSubscribedTo ------------> users', users);
     return users;
   });
 };
