@@ -5,15 +5,13 @@ import {
 } from 'graphql';
 import {
   CreatePostInput,
-  PostType,
   CreateProfileInput,
-  Profiles,
   CreateUserInput,
-  UserType,
   ChangePostInput,
   ChangeUserInput,
   ChangeProfileInput,
-} from './types/types.js';
+} from './types/typesGraphQLInput.js';
+import { PostType, Profiles, UserType} from './types/typesGraphQL.js';
 import { UUIDType } from './types/uuid.js';
 import { ContextValue, PostInput, ProfileInput, UserInput } from './types/typesJS.js';
 
@@ -21,7 +19,7 @@ export const RootMutation = new GraphQLObjectType({
   name: 'RootMutationType',
   fields: {
     createPost: {
-      type: PostType,
+      type: PostType as GraphQLObjectType,
       args: {
         dto: { type: CreatePostInput },
       },
@@ -39,7 +37,7 @@ export const RootMutation = new GraphQLObjectType({
       },
     },
     createProfile: {
-      type: Profiles,
+      type: Profiles as GraphQLObjectType,
       args: {
         dto: { type: CreateProfileInput },
       },
@@ -97,7 +95,7 @@ export const RootMutation = new GraphQLObjectType({
     },
 
     changePost: {
-      type: PostType,
+      type: PostType as GraphQLObjectType,
       args: {
         id: { type: new GraphQLNonNull(UUIDType) },
         dto: { type: new GraphQLNonNull(ChangePostInput) },
@@ -135,7 +133,7 @@ export const RootMutation = new GraphQLObjectType({
       },
     },
     changeProfile: {
-      type: Profiles,
+      type: Profiles as GraphQLObjectType,
       args: {
         id: { type: new GraphQLNonNull(UUIDType) },
         dto: { type: new GraphQLNonNull(ChangeProfileInput) },
@@ -197,16 +195,5 @@ export const RootMutation = new GraphQLObjectType({
         }
       },
     },
-    /*createPost: {
-        type: PostType,
-        args: { dto: { type: new GraphQLNonNull(PostInputType) } },
-        resolve: (parent, { dto }) => {
-          return new PrismaClient().post.create({ data: dto });
-        },
-      },*/
-    /*createUser: {
-        type: UserType,
-        args: { dto: new GraphQLNonNull(GraphQLString) },
-      },*/
   },
 });

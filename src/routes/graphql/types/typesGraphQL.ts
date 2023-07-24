@@ -1,5 +1,5 @@
 import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, 
-  GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, 
+  GraphQLInt, GraphQLList, GraphQLNonNull, 
   GraphQLObjectType, GraphQLString } from 'graphql';
 import { UUIDType } from './uuid.js';
 
@@ -16,26 +16,14 @@ export const UserType = new GraphQLObjectType({
     posts: {
       type: new GraphQLList(PostType),
       resolve: async (parent: User, _, { loader }: ContextValue) => {
-        //working
         const posts =  await loader.post.load(parent.id);
-        //console.log("RESULTS POST FROM DATALOADER --------->", posts);
       return [posts]; 
-       /*return await prisma.post.findMany({
-          where: {
-            authorId: parent.id,
-          },
-        });*/
       },
     },
     profile: {      
       type: Profiles as GraphQLObjectType,
       resolve: async (parent: User, _, { loader }: ContextValue) => {
                 return await loader.profile.load(parent.id);
-        /*return await prisma.profile.findUnique({
-          where: {
-            userId: parent.id,
-          },
-        });*/
       },
     },
     userSubscribedTo: {
@@ -58,7 +46,6 @@ export const UserType = new GraphQLObjectType({
           where: {
             userSubscribedTo: { some: { authorId: parent.id}},
           },
-
         });
         return result;*/
 
@@ -78,7 +65,6 @@ export const Profiles = new GraphQLObjectType({
       type: MemberTypes as GraphQLObjectType,
       resolve: async (parent: Profile, _, { loader }: ContextValue) => {
         return await loader.memberType.load(parent.memberTypeId);
-        //return await  prisma.memberType.findUnique({ where: { id: parent.memberTypeId } });
       },
     },
     userId: { type: new GraphQLNonNull(UUIDType) },
@@ -131,57 +117,3 @@ export const MemberTypeId = new GraphQLEnumType({
   },
 });
 
-export const CreatePostInput = new GraphQLInputObjectType({
-  name: 'CreatePostInput',
-  description: 'posts input',
-  fields: () => ({
-    authorId: { type: new GraphQLNonNull(UUIDType) },
-    title: { type: GraphQLString },
-    content: { type: GraphQLString },
-  }),
-});
-export const CreateUserInput = new GraphQLInputObjectType({
-  name: 'CreateUserInput',
-  description: 'user input',
-  fields: () => ({
-    name: { type: GraphQLString },
-    balance: { type: GraphQLFloat },
-  }),
-});
-export const CreateProfileInput = new GraphQLInputObjectType({
-  name: 'CreateProfileInput',
-  description: 'profile input',
-  fields: () => ({
-    userId: { type: GraphQLString },
-    memberTypeId: { type: MemberTypeId },
-    isMale: { type: GraphQLBoolean },
-    yearOfBirth: { type: GraphQLInt },
-  }),
-});
-
-export const ChangePostInput = new GraphQLInputObjectType({
-  name: 'ChangePostInput',
-  description: 'posts input for change',
-  fields: () => ({
-    title: { type: GraphQLString },
-    content: { type: GraphQLString },
-  }),
-});
-export const ChangeUserInput = new GraphQLInputObjectType({
-  name: 'ChangeUserInput',
-  description: 'user input for change',
-  fields: () => ({
-    name: { type: GraphQLString },
-    balance: { type: GraphQLFloat },
-  }),
-});
-export const ChangeProfileInput = new GraphQLInputObjectType({
-  name: 'ChangeProfileInput',
-  description: 'profile input for change',
-  fields: () => ({
-    memberTypeId: { type: MemberTypeId },
-    isMale: { type: GraphQLBoolean },
-    yearOfBirth: { type: GraphQLInt },
-  }),
-});
- 

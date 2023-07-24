@@ -9,7 +9,7 @@ import {
   PostType,
   Profiles,
   UserType,
-} from './types/types.js';
+} from './types/typesGraphQL.js';
 import { UUIDType } from './types/uuid.js';
 import { ContextValue, User } from './types/typesJS.js';
 import { parseResolveInfo } from 'graphql-parse-resolve-info';
@@ -34,8 +34,6 @@ export const RootQuery = new GraphQLObjectType({
         args: { id: string },
         { prisma }: ContextValue,
       ) => {
-        //work loader
-        //const res = loader.memberType.load(args.id);
         const res = await prisma.memberType.findUnique({
           where: {
             id: args.id,
@@ -47,7 +45,6 @@ export const RootQuery = new GraphQLObjectType({
     posts: {
       type: new GraphQLList(PostType),
       resolve: async (_: unknown, __: unknown, { prisma }: ContextValue) => {
-        
         return await prisma.post.findMany();
       },
     },
@@ -112,7 +109,6 @@ export const RootQuery = new GraphQLObjectType({
             loader.subscribedToUser.prime(sub[0], user[0]);
           });
         }
-        //users.forEach(user => loader.user.prime(user.id, user));
          return users;
       },
     },
@@ -126,7 +122,6 @@ export const RootQuery = new GraphQLObjectType({
         args: { id: string },
         { prisma }: ContextValue,
       ) => {
-        //const res = await loader.user.load(args.id);
         const res = await prisma.user.findUnique({ where: { id: args.id } });
         return res;
       },
@@ -148,8 +143,6 @@ export const RootQuery = new GraphQLObjectType({
         args: { id: string },
         { prisma }: ContextValue,
       ) => {
-        //work load
-        //const res =  loader.profile.load(args.id);
         const res = await prisma.profile.findUnique({
           where: {
             id: args.id,

@@ -21,8 +21,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
     async handler(req) {
       const { query, variables } = req.body;
-      //console.log('this is req.body.query  -----> ', query);
-      //console.log('this is req.body.variables  ----->', variables);
       const parsedQuery = parse(query);
       const errorsValidation = validate(schema, parsedQuery, [ depthLimit(5)]);
       if(errorsValidation && errorsValidation.length > 0 ){
@@ -31,14 +29,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const loader = createDataLoader(prisma);
 
-      const res = await graphql({
+      const response = await graphql({
         schema: schema,
         source: query,
         variableValues: variables,
         contextValue: { prisma, loader}
       });
-      //console.log('это ответ сервера graphql---->', res.errors);
-      return res;
+      //console.log('this is response graphql---->', response.errors);
+      return response;
     },
   });
 

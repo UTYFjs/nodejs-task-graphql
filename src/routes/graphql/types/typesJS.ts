@@ -59,7 +59,6 @@ export type ContextValue = {
    profile: DataLoader<string, Profile, string>;
    post: DataLoader<string, Post[], string>;
    memberType: DataLoader<string, Post, string>;
-   //user: DataLoader<string, User, string>;
    userSubscribedTo: DataLoader<string, User, string>;
    subscribedToUser: DataLoader<string, User, string>;
  };
