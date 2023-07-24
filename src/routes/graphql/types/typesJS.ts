@@ -18,6 +18,7 @@ export type ProfileInput = {
   isMale: boolean;
   yearOfBirth: number;
 }
+
 export type User = {
   id: string;
   name: string;
@@ -56,9 +57,9 @@ export type ContextValue = {
   loader: loaders;
 };
  type loaders = {
-   profile: DataLoader<string, Profile, string>;
-   post: DataLoader<string, Post[][], string>;
-   memberType: DataLoader<string, Post, string>;
-   userSubscribedTo: DataLoader<string, User[], string>;
-   subscribedToUser: DataLoader<string, User[], string>;
+   profile: DataLoader<string, Profile>;
+   post: DataLoader<string, Post[]>;
+   memberType: DataLoader<string, MemberType>;
+   userSubscribedTo: DataLoader<string, User[]>;
+   subscribedToUser: DataLoader<string, User[]>;
  };
