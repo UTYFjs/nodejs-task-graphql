@@ -46,17 +46,3 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 export default plugin;
 
 
-/**    const authors: Record<string, User[]> = {}
-    results.forEach((userSubscribedTo) =>{
-      let userSubscribedToArr = authors[userSubscribedTo.subscriberId]; 
-      if(!userSubscribedToArr){
-        userSubscribedToArr = []
-      }
-      userSubscribedToArr.push(userSubscribedTo.author);
-      authors[userSubscribedTo.subscriberId] = userSubscribedToArr;
-   })
-
-    const  authors1 = ids.map((key)=>{
-      return authors[key];
-
-    }) */

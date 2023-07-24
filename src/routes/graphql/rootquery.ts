@@ -12,7 +12,7 @@ import {
 } from './types/typesGraphQL.js';
 import { UUIDType } from './types/uuid.js';
 import { ContextValue, User } from './types/typesJS.js';
-import { parseResolveInfo } from 'graphql-parse-resolve-info';
+import { ResolveTree, parseResolveInfo, simplifyParsedResolveInfoFragmentWithType } from 'graphql-parse-resolve-info';
 
 
 export const RootQuery = new GraphQLObjectType({
@@ -70,8 +70,11 @@ export const RootQuery = new GraphQLObjectType({
       type: new GraphQLList(UserType),
       resolve: async (_: unknown, __: unknown, { prisma, loader}: ContextValue, info) => {
         const parsedInfo = parseResolveInfo(info);
-        const isUserSubscribedTo =!!parsedInfo?.fieldsByTypeName.User['userSubscribedTo'];
-        const isSubscribedToUser =!!parsedInfo?.fieldsByTypeName.User['subscribedToUser'];
+        const simpleFragment = simplifyParsedResolveInfoFragmentWithType(parsedInfo as ResolveTree, new GraphQLNonNull(UserType));
+        const isUserSubscribedTo =
+          !!simpleFragment?.fields['userSubscribedTo'];
+        const isSubscribedToUser =
+          !!simpleFragment.fields['subscribedToUser'];
         const users = await prisma.user.findMany({
            include: {
              userSubscribedTo: isUserSubscribedTo,
@@ -89,9 +92,7 @@ export const RootQuery = new GraphQLObjectType({
           })
           const arrFromSubs = Object.entries(subs);
           arrFromSubs.forEach((sub) => {
-            const user = sub[1] as User[];
-            //console.log('FromQuery user[0 ------------>', user[0])
-            loader.userSubscribedTo.prime(sub[0] , user[0] );
+            loader.userSubscribedTo.prime(sub[0], sub[1] as User[]);
           })
         }
          
@@ -106,8 +107,7 @@ export const RootQuery = new GraphQLObjectType({
           });
           const arrFromAuthors = Object.entries(authors);
           arrFromAuthors.forEach((sub) => {
-            const user = sub[1] as User[];
-            loader.subscribedToUser.prime(sub[0], user[0]);
+            loader.subscribedToUser.prime(sub[0], sub[1] as User[]);
           });
         }
          return users;

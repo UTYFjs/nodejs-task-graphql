@@ -54,11 +54,11 @@ export type MemberType = {
 export type ContextValue = {
   prisma: PrismaClient;
   loader: loaders;
-}
+};
  type loaders = {
    profile: DataLoader<string, Profile, string>;
    post: DataLoader<string, Post[][], string>;
    memberType: DataLoader<string, Post, string>;
-   userSubscribedTo: DataLoader<string, User, string>;
-   subscribedToUser: DataLoader<string, User, string>;
+   userSubscribedTo: DataLoader<string, User[], string>;
+   subscribedToUser: DataLoader<string, User[], string>;
  };

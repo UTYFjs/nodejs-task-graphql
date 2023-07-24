@@ -1,7 +1,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import DataLoader from 'dataloader';
-import { Post, Profile, MemberType } from '../types/typesJS.js';
+import { Post, MemberType, User } from '../types/typesJS.js';
 
 export const createProfileLoader = (prisma: PrismaClient) => {
   return new DataLoader(async (keys: readonly string[]) => {
@@ -10,7 +10,7 @@ export const createProfileLoader = (prisma: PrismaClient) => {
       where: {
         userId: { in: ids },
       },
-    })) as Profile[];
+    }));
     //sorting results according to keys order
     const profiles = ids.map((key) => {
       return results.find((profile) => profile.userId === key);
@@ -23,35 +23,27 @@ export const createProfileLoader = (prisma: PrismaClient) => {
 export const createPostLoader = (prisma: PrismaClient) => {
   return new DataLoader(async (keys: readonly string[]) => {
     const ids = [...keys];
-    //get all posts of all authors
+    //get all posts of all authors unsorted
     const results = (await prisma.post.findMany({
       where: {
         authorId: { in: ids },
       },
     }));
-
-    //console.log("POST LOADER RESults --------------->", results);
     //sorting posts by authors
-    const posts1:Record<string, Post[]> ={};
+    const postsByAuthors:Record<string, Post[]> ={};
     results.forEach((post) => {
-      let authorPostsCollection = posts1[post.authorId];
+      let authorPostsCollection = postsByAuthors[post.authorId];
       if(!authorPostsCollection){
         authorPostsCollection = []
       }
       authorPostsCollection.push(post)
-      posts1[post.authorId] = authorPostsCollection;
+      postsByAuthors[post.authorId] = authorPostsCollection;
     })
     // sorting by order key
-    const posts2 = ids.map((key) => {
-      return posts1[key]
-    })
-
     const posts = ids.map((key) => {
-      return results.find((post) => post.authorId === key);
-    });
-   // return posts;
-   //console.log("POSTS by AUTHORS ------------->", posts2, "oldPosts", posts);
-   return posts2;
+      return postsByAuthors[key];
+    })
+   return posts;
   });
 };
 
@@ -62,7 +54,7 @@ export const createMemberTypeLoader = (prisma: PrismaClient) => {
       where: {
         id: { in: ids },
       },
-    })) as MemberType[];
+    }));
     const memberTypes = ids.map((key) => {
       return results.find((memberType) => memberType.id === key) as MemberType;
     });
@@ -83,14 +75,19 @@ export const createUserSubscribedTo = (prisma: PrismaClient) => {
         author: true,
       },
     });
+    const authors: Record<string, User[]> = {}
+    results.forEach((userSubscribedTo) =>{
+      let userSubscribedToArr = authors[userSubscribedTo.subscriberId]; 
+      if(!userSubscribedToArr){
+        userSubscribedToArr = []
+      }
+      userSubscribedToArr.push(userSubscribedTo.author);
+      authors[userSubscribedTo.subscriberId] = userSubscribedToArr;
+   })
 
-
-
-
-    const users = ids.map((key) => {
-      return results.find((memberType) => memberType.subscriberId === key)?.author;
-    });
-    console.log('UserSubscribedTo ------------> users', users);
+    const  users = ids.map((key)=>{
+      return authors[key];
+    }) 
     return users;
   });
 };
@@ -107,9 +104,20 @@ export const createSubscribedToUser = (prisma: PrismaClient) => {
         subscriber: true,
       },
     });
-    const users = ids.map((key) => {
-      return results.find((memberType) => memberType.authorId === key)?.subscriber;
-    });
-    return users;
+
+     const subs: Record<string, User[]> = {};
+     results.forEach((userSubscribedTo) => {
+       let userSubscribedToArr = subs[userSubscribedTo.authorId];
+       if (!userSubscribedToArr) {
+         userSubscribedToArr = [];
+       }
+       userSubscribedToArr.push(userSubscribedTo.subscriber);
+       subs[userSubscribedTo.authorId] = userSubscribedToArr;
+     });
+
+     const users = ids.map((key) => {
+       return subs[key];
+     });
+     return users;
   });
 };
