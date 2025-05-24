@@ -27,15 +27,7 @@ export const RootMutation = new GraphQLObjectType({
         return prisma.post.create({ data: args.dto });
       },
     },
-    createUser: {
-      type: new GraphQLNonNull(UserType),
-      args: {
-        dto: { type: CreateUserInput },
-      },
-      resolve: async (_, args: { dto: UserInput }, { prisma }: ContextValue) => {
-        return prisma.user.create({ data: args.dto });
-      },
-    },
+
     createProfile: {
       type: Profiles as GraphQLObjectType,
       args: {
@@ -43,6 +35,15 @@ export const RootMutation = new GraphQLObjectType({
       },
       resolve: async (_, args: { dto: ProfileInput }, { prisma }: ContextValue) => {
         return prisma.profile.create({ data: args.dto });
+      },
+    },
+    createUser: {
+      type: new GraphQLNonNull(UserType),
+      args: {
+        dto: { type: CreateUserInput },
+      },
+      resolve: async (_, args: { dto: UserInput }, { prisma }: ContextValue) => {
+        return prisma.user.create({ data: args.dto });
       },
     },
     deletePost: {

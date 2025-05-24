@@ -28,7 +28,7 @@
     "dev:start": "fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js"
   },
   "engines": {
-    "node": ">=18.16.0 <19.0.0"
+    "node": ">=18.16.0 <24.0.0"
   },
   "keywords": [],
   "author": "",
